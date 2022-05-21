@@ -15,6 +15,9 @@ DUMMY := mkdir -p $(BUILD_DIR)
 $(WADER): src/main.c src/wadfile.h src/common.h
 	$(CC) $(CFLAGS) $< -o $@
 
+$(BUILD_DIR)/lzss: src/lzss.c
+	$(CC) $(CFLAGS) -DLZSS_MAIN $< -o $@
+
 run: $(WADER)
 	$< $(TEST_WAD)
 

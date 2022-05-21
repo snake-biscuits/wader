@@ -153,6 +153,7 @@ void decode(void)
     }
 }
 
+#ifdef LZSS_MAIN
 int main(int argc, char *argv[])
 {
     int enc;
@@ -178,3 +179,4 @@ int main(int argc, char *argv[])
     fclose(infile);  fclose(outfile);
     return 0;
 }
+#endif

@@ -10,9 +10,11 @@
 
 #define VERSION_MAJOR  0
 #define VERSION_MINOR  1
+#define VERSION_PATCH  0
+
 
 void print_version() {
-    printf("wader %d.%d\n", VERSION_MAJOR, VERSION_MINOR);
+    printf("wader %d.%d.%d\n", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
     printf("Copyright (C) 2022 snake-biscuits\n");
     printf("License LGPLv3+: GNU Lesser GPL version 3 or later <https://gnu.org/licenses/gpl.html>.\n");
     printf("This is free software: you are free to change and redistribute it.\n");

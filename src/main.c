@@ -24,24 +24,28 @@ void print_version() {
 
 void print_help() {
     printf("Usage: wader OPTION... WADFILE...\n");
-    printf("  -h, --help     display help and exit\n");
-    printf("  -v, --version  display version and exit\n");
-    printf("\n");
-    // WADFILE peeking
-    printf("  -l, --list             list lump names and exit\n");
-    printf("  -e, --extract PATTERN  extract lumps which match PATTERN\n");
-    printf("                         PATTERN must include leading special characters!\n");
+    printf("  -h, --help               display help and exit\n");
+    printf("  -v, --version            display version and exit\n");
+    printf("  -o, --output FILEPATH    where to create generated files\n");
+    printf("                           FOLDER for readER / WADFILE for makER\n");
+    printf("  -V, --verbose            print lump headers\n");
+    printf("WAD readER\n");
+    printf("  -l, --list               list lump names and exit\n");
+    printf("  -e, --extract PATTERN    extract lumps which match PATTERN\n");
+    printf("                           PATTERN must include leading special characters!\n");
     // TODO: make --extract a flag & default PATTERN = "*"
-    // TODO:  -p, --pattern PATTERN  only touch lumps which match pattern
-    printf("  -i, --index INDEX      same as --extract, but extracts lump @ INDEX\n");  // ignores PATTERN
-    printf("  -o, --output FOLDER    lumps are written to FOLDER; default = CWD\n");
-    printf("  -V, --verbose          print lump headers\n");
-    // TODO: WADFILE creation
+    // TODO:  -p, --pattern PATTERN    only touch lumps which match pattern
+    printf("  -i, --index INDEX        same as --extract, but extracts lump @ INDEX\n");  // ignores PATTERN
+    // NOTE: INDEX & PATTERN are mutually exclusive; also, each may only be set once
+    // TODO: WAD makER
+    // TODO:  -b, --bsp BSPFILE...     make a WAD from each BSPFILE's embedded MIP_TEXTURES
+    // TODO:  -f, --files FILES...     make a WAD from FILES (accepted types, conversions & output WADFILE)
 }
 
 
 void sanitise(char name[17]) {
     char tmp[17];
+
     switch (name[0]) {
         case '+':  // +Xname -> _Xname
         case '*':  // *name  -> _name
@@ -55,16 +59,16 @@ void sanitise(char name[17]) {
 
 
 int main(int argc, char *argv[]) {
-    int         i, index = -1;
+    int         i, j, k, index, wad_tell;
     FILE       *wad, *out;
     WadInfo_t   wad_header;
     LumpInfo_t *wad_lumps;
     bool        list, extract, verbose;
-    char        pattern[64], out_folder[4096 - 17], outfile[4096], lump_name[17], compression[5], lump_type[12];
+    char        pattern[64], outdir[4096 - 17], outfile[4096], lump_name[17], compression[5], lump_type[12];
 
     index = -1;
     list = extract = verbose = false;
-    strcpy(out_folder, "./");
+    strcpy(outdir, "./");
 
 // [OPTION]... jump table
 #define ARGS_ASSERT(cond, msg) if (cond) { fprintf(stderr, msg); return 1; }
@@ -89,10 +93,10 @@ index_jmp:
     index = atoi(argv[i]);
     goto next_arg_jmp;
 output_jmp:
-    ARGS_ASSERT(strcmp(out_folder, "./"), "--output cannot target more than one FOLDER!\n")
+    ARGS_ASSERT(strcmp(outdir, "./"), "--output cannot target more than one FOLDER!\n")
     ARGS_ASSERT(++i == argc, "--output has no FOLDER!\n")
-    strcpy(out_folder, argv[i]);
-    strcat(out_folder, "/");
+    strcpy(outdir, argv[i]);
+    strcat(outdir, "/");
     goto next_arg_jmp;
 verbose_jmp:
     verbose = true;
@@ -158,56 +162,77 @@ next_arg_jmp:
         WADFILE_ASSERT(!(wad_header.magic == WAD2), "%s is not a Quake .wad (WAD2)\n")
         fseek(wad, wad_header.table_offset, SEEK_SET);
         wad_lumps = malloc(sizeof(LumpInfo_t) * wad_header.num_lumps);
-        for (int j = 0; j < wad_header.num_lumps; j++) {
+        for (j = 0; j < wad_header.num_lumps; j++) {
             WADFILE_ASSERT(READ_OK(wad_lumps[j], LumpInfo_t), "%s is too short to be valid\n")
             if (list) {
-                printf("%s\n", wad_lumps[j].name);
+                if (verbose) {
+                    printf("Lump %d:\n", j);
+                    #define PRINT_ATTR(format, attr)  printf("\t" #attr " = " format "\n", wad_lumps[j].attr);
+                    PRINT_ATTR("%d", offset)
+                    PRINT_ATTR("%d", disk_size)
+                    PRINT_ATTR("%d", size)
+                    switch (wad_lumps[j].lump_type) {
+                        case LUMP_NONE:
+                            strcpy(lump_type, "NONE");
+                            break;
+                        case LUMP_LABEL:
+                            strcpy(lump_type, "LABEL");
+                            break;
+                        case LUMP_PALETTE:      strcpy(lump_type, "PALETTE");     break;
+                        case LUMP_QTEXTURE:     strcpy(lump_type, "QTEXTURE");    break;
+                        case LUMP_QPICTURE:     strcpy(lump_type, "QPICTURE");    break;
+                        case LUMP_SOUND:        strcpy(lump_type, "SOUND");       break;
+                        case LUMP_MIP_TEXTURE:  strcpy(lump_type, "MIP_TEXTURE"); break;
+                        default:                strcpy(lump_type, "UNKNOWN");
+                    }
+                    printf("\tlump_type = %hhd (%s)\n", wad_lumps[j].lump_type, lump_type);
+                    switch (wad_lumps[j].compression) {
+                        case COMPRESSION_NONE:  strcpy(compression, "NONE"); break;
+                        case COMPRESSION_LZSS:  strcpy(compression, "LZSS"); break;
+                        default:                strcpy(compression, "????");
+                    }
+                    printf("\tcompression = %hhd (%s)\n", wad_lumps[j].compression, compression);
+                    PRINT_ATTR("%s", name)
+                    #undef PRINT_ATTR
+                } else
+                    printf("%s\n", wad_lumps[j].name);
             }
             if (extract) {
                 if (fnmatch(pattern, wad_lumps[j].name, FNM_EXTMATCH)) {
                     strcpy(lump_name, wad_lumps[j].name);
                     sanitise(lump_name);
-                    strcpy(outfile, out_folder);
+                    strcpy(outfile, outdir);
                     strcat(outfile, lump_name);
+                    if (verbose)
+                        printf("Writing to %s\n", outfile);
                     out = fopen(outfile, "w");
                     OUTFILE_ASSERT(!out, "Couldn't open %s\n")
+                    wad_tell = ftell(wad);
+                    fseek(wad, wad_lumps[j].offset, SEEK_SET);
+                    for (k = 0; k < wad_lumps[j].size; k++) {
+                        fputc(fgetc(wad), out);  // NOTE: no buffer, no checks;  probably very slow
+                    };
+                    fseek(wad, wad_tell, SEEK_SET);
                     CLOSE_FILE(out, outfile)
-                    #undef OUTFILE_ASSERT
                 }
-            }
-            if (verbose) {
-                printf("Lump %d:\n", j);
-                #define PRINT_ATTR(format, attr)  printf("\t" #attr " = " format "\n", wad_lumps[j].attr);
-                PRINT_ATTR("%d", offset)
-                PRINT_ATTR("%d", disk_size)
-                PRINT_ATTR("%d", size)
-                switch (wad_lumps[j].lump_type) {
-                    case LUMP_NONE:
-                        strcpy(lump_type, "NONE");
-                        break;
-                    case LUMP_LABEL:
-                        strcpy(lump_type, "LABEL");
-                        break;
-                    case LUMP_PALETTE:      strcpy(lump_type, "PALETTE");     break;
-                    case LUMP_QTEXTURE:     strcpy(lump_type, "QTEXTURE");    break;
-                    case LUMP_QPICTURE:     strcpy(lump_type, "QPICTURE");    break;
-                    case LUMP_SOUND:        strcpy(lump_type, "SOUND");       break;
-                    case LUMP_MIP_TEXTURE:  strcpy(lump_type, "MIP_TEXTURE"); break;
-                    default:                strcpy(lump_type, "UNKNOWN");
-                }
-                printf("\tlump_type = %hhd (%s)\n", wad_lumps[j].lump_type, lump_type);
-                switch (wad_lumps[j].compression) {
-                    case COMPRESSION_NONE:  strcpy(compression, "NONE"); break;
-                    case COMPRESSION_LZSS:  strcpy(compression, "LZSS"); break;
-                    default:                strcpy(compression, "????");
-                }
-                printf("\tcompression = %hhd (%s)\n", wad_lumps[j].compression, compression);
-                PRINT_ATTR("%s", name)
-                #undef PRINT_ATTR
             }
         };
 
-        // TODO: actions that require all headers to be read first go here:
+        WADFILE_ASSERT(index >= wad_header.num_lumps, "INDEX is greater than %s num_lumps\n")
+        else if (index != -1) {
+            strcpy(lump_name, wad_lumps[index].name);
+            sanitise(lump_name);
+            strcpy(outfile, outdir);
+            strcat(outfile, lump_name);
+            out = fopen(outfile, "w");
+            OUTFILE_ASSERT(!out, "Couldn't open %s\n")
+            fseek(wad, wad_lumps[index].offset, SEEK_SET);
+            for (k = 0; k < wad_lumps[index].size; k++) {
+                fputc(fgetc(wad), out);  // NOTE: no buffer, no checks;  probably very slow
+            };
+            CLOSE_FILE(out, outfile)
+        }
+        #undef OUTFILE_ASSERT
 
         free(wad_lumps);
         #undef READ_OK

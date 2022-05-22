@@ -1,0 +1,16 @@
+wader 0.1
+Copyright (C) 2022 snake-biscuits
+License LGPLv3+: GNU Lesser GPL version 3 or later <https://gnu.org/licenses/gpl.html>.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+Usage: wader OPTION... WADFILE...
+  -h, --help     display help and exit
+  -v, --version  display version and exit
+
+  -l, --list             list lump names and exit
+  -e, --extract PATTERN  extract lumps which match PATTERN
+                         PATTERN must include leading special characters!
+  -i, --index INDEX      same as --extract, but extracts lump @ INDEX
+  -o, --output FOLDER    lumps are written to FOLDER; default = CWD
+  -V, --verbose          print lump headers

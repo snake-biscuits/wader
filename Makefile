@@ -13,13 +13,16 @@ DUMMY := mkdir -p $(BUILD_DIR)
 
 
 # TODO: make `.o` for each `.c` in `src/`
-all: $(BUILD_DIR)/*
+all: $(BUILD_DIR)/* README
 
 $(WADER): src/main.c src/wadfile.h src/common.h
 	$(CC) $(CFLAGS) $< -o $@
 
 $(BUILD_DIR)/lzss: src/lzss.c
 	$(CC) $(CFLAGS) -DLZSS_MAIN $< -o $@
+
+README: $(WADER)
+	$(WADER) -v > $@; echo >> $@; $(WADER) -h >> $@
 
 run: $(WADER)
 	$< -l $(TEST_WAD) | less -

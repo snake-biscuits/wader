@@ -97,6 +97,7 @@ output_jmp:
     ARGS_ASSERT(++i == argc, "--output has no FOLDER!\n")
     strcpy(outdir, argv[i]);
     strcat(outdir, "/");
+    // printf("output FOLDER: %s\n", outdir);
     goto next_arg_jmp;
 verbose_jmp:
     verbose = true;

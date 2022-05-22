@@ -9,8 +9,11 @@ TEST_WAD := /home/bikkie/Documents/Mod/Quake/Wads/prototype_1_3.wad
 
 DUMMY := mkdir -p $(BUILD_DIR)
 
-.PHONY: run debug
+.PHONY: all run debug
 
+
+# TODO: make `.o` for each `.c` in `src/`
+all: $(BUILD_DIR)/*
 
 $(WADER): src/main.c src/wadfile.h src/common.h
 	$(CC) $(CFLAGS) $< -o $@
@@ -19,10 +22,11 @@ $(BUILD_DIR)/lzss: src/lzss.c
 	$(CC) $(CFLAGS) -DLZSS_MAIN $< -o $@
 
 run: $(WADER)
-	$< $(TEST_WAD)
+	$< -l $(TEST_WAD) | less -
 
-debug:
-	gdb -ex run --args $(WADER) $(TEST_WAD)
+debug: $(WADER)
+	gdb -ex bt -ex run --args $(WADER) -l $(TEST_WAD)
 
 # TODO: groff manpage
 # TODO: installer
+# TODO: test scripts (see mdolidon/endlines for examples)

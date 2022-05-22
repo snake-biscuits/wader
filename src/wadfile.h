@@ -14,14 +14,15 @@
 
 
 #define WAD2 FILE_MAGIC('W', 'A', 'D', '2')  // Textures
+#define WAD3 FILE_MAGIC('W', 'A', 'D', '3')  // untested; should function the same
 
-#define LUMP_NONE      0
-#define LUMP_LABEL     1
-#define LUMP_PALETTE  64
-#define LUMP_QTEX     65
-#define LUMP_QPIC     66
-#define LUMP_SOUND    67
-#define LUMP_MIPTEX   68
+#define LUMP_NONE          0
+#define LUMP_LABEL         1
+#define LUMP_PALETTE      64
+#define LUMP_QTEXTURE     65  // QTEX
+#define LUMP_QPICTURE     66  // QPIC
+#define LUMP_SOUND        67
+#define LUMP_MIP_TEXTURE  68  // MIPTEX
 
 #define COMPRESSION_NONE  0
 #define COMPRESSION_LZSS  1  // Lempel–Ziv–Storer–Szymanski (LZ77 Extension)
@@ -46,7 +47,7 @@ typedef struct LumpInfo {
     int8_t   lump_type;
     int8_t   compression;
     int16_t  padding;
-    char     name[16];  // null-terminated
+    char     name[16];  // null-terminated; name may denote subtype
 } LumpInfo_t;
 
 
@@ -54,29 +55,18 @@ typedef struct LumpInfo {
 // Lumps //
 ///////////
 
-typedef struct QPic {
+typedef struct QPicture {
     int32_t  width;
     int32_t  height;
-    char    *data;  // uint8_t[width * height];  // indexes Palette
-} QPic_t;
-
-
-typedef struct MipTex {
-    char     name[16];
-    int32_t  width;
-    int32_t  height;
-    char*    full;     // (width * length) /  1 * 3 (RGB_888)
-    char*    half;     // (width * length) /  4 * 3
-    char*    quarter;  // (width * length) / 16 * 3
-    char*    eighth;   // (width * length) / 64 * 3
-} MipTex_t;
+    char    *data;  // &uint8_t[width * height]; indexes Palette
+} QPicture_t;
 
 
 typedef struct Palette {  // unchanged since DOOM
     uint8_t  colour[3][256];  // 256 RGB_888 Colours
 } Palette_t;
 
-// TODO: QTex, Sound
+// TODO: QTexture, Sound
 
 
 #endif

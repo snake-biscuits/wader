@@ -6,11 +6,7 @@
 #include <string.h>
 
 #include "wadfile.h"
-
-
-#define VERSION_MAJOR  0
-#define VERSION_MINOR  1
-#define VERSION_PATCH  0
+#include "version.h"
 
 
 void print_version() {
@@ -26,20 +22,20 @@ void print_help() {
     printf("Usage: wader OPTION... WADFILE...\n");
     printf("  -h, --help               display help and exit\n");
     printf("  -v, --version            display version and exit\n");
-    printf("  -o, --output FILEPATH    where to create generated files\n");
-    printf("                           FOLDER for readER / WADFILE for makER\n");
+    printf("  -o, --output FOLDER      where to place extracted files\n");
     printf("  -V, --verbose            print lump headers\n");
     printf("WAD readER\n");
     printf("  -l, --list               list lump names and exit\n");
-    printf("  -e, --extract PATTERN    extract lumps which match PATTERN\n");
-    printf("                           PATTERN must include leading special characters!\n");
-    // TODO: make --extract a flag & default PATTERN = "*"
-    // TODO:  -p, --pattern PATTERN    only touch lumps which match pattern
-    printf("  -i, --index INDEX        same as --extract, but extracts lump @ INDEX\n");  // ignores PATTERN
-    // NOTE: INDEX & PATTERN are mutually exclusive; also, each may only be set once
+    printf("  -e, --extract            extract lumps to OUTPUT folder\n");
+    printf("                           dumps raw lump contents without headers\n");
+    // TODO: generate .json for extracted files (filename: lump_type, compression etc.)
+    printf("  -p, --pattern PATTERN    only touch lumps which match PATTERN\n");
+    printf("                           PATTERN must include special characters!\n");
+    printf("  -i, --index INDEX        extract just the lump at INDEX\n");
     // TODO: WAD makER
-    // TODO:  -b, --bsp BSPFILE...     make a WAD from each BSPFILE's embedded MIP_TEXTURES
-    // TODO:  -f, --files FILES...     make a WAD from FILES (accepted types, conversions & output WADFILE)
+    // TODO:  -b, --bsp BSPFILE        make a WAD from BSPFILE's embedded MIP_TEXTURES
+    // TODO:  -f, --files LIST.json    make a WAD from raw lumps in LIST.json
+    // TODO:                           LIST.json should match format of a --extract OUTPUT.json
 }
 
 
@@ -64,10 +60,11 @@ int main(int argc, char *argv[]) {
     WadInfo_t   wad_header;
     LumpInfo_t *wad_lumps;
     bool        list, extract, verbose;
-    char        pattern[64], outdir[4096 - 17], outfile[4096], lump_name[17], compression[5], lump_type[12];
+    char        pattern[4096], outdir[4096 - 17], outfile[4096], lump_name[17], compression[5], lump_type[12];
 
     index = -1;
     list = extract = verbose = false;
+    strcpy(pattern, "*");
     strcpy(outdir, "./");
 
 // [OPTION]... jump table
@@ -83,9 +80,12 @@ list_jmp:
     list = true;
     goto next_arg_jmp;
 extract_jmp:
-    ARGS_ASSERT(extract, "--extract cannot use more than one PATTERN!\n")
     extract = true;
-    ARGS_ASSERT(++i == argc, "--extract has no NAME to extract!\n")
+    goto next_arg_jmp;
+pattern_jmp:
+    ARGS_ASSERT(strcmp(pattern, "*"), "--only one PATTERN is allowed! (use extended patterns instead)\n")
+    ARGS_ASSERT(++i == argc, "--pattern has no PATTERN!\n")
+    ARGS_ASSERT(strlen(argv[i]) == 4096 - 1, "PATTERN is too long!\n")
     strcpy(pattern, argv[i]);
     goto next_arg_jmp;
 index_jmp:
@@ -118,6 +118,7 @@ end_jmp_table:
                     case 'v':  goto version_jmp;
                     case 'l':  goto list_jmp;
                     case 'e':  goto extract_jmp;
+                    case 'p':  goto pattern_jmp;
                     case 'i':  goto index_jmp;
                     case 'o':  goto output_jmp;
                     case 'V':  goto verbose_jmp;
@@ -129,6 +130,7 @@ end_jmp_table:
                 else if IS_OPTION("--version")  goto version_jmp;
                 else if IS_OPTION("--list")     goto list_jmp;
                 else if IS_OPTION("--extract")  goto extract_jmp;
+                else if IS_OPTION("--pattern")  goto pattern_jmp;
                 else if IS_OPTION("--index")    goto index_jmp;
                 else if IS_OPTION("--output")   goto output_jmp;
                 else if IS_OPTION("--verbose")  goto verbose_jmp;
@@ -158,7 +160,7 @@ next_arg_jmp:
         wad = fopen(argv[i], "r");
         WADFILE_ASSERT(!wad, "Couldn't open %s\n")
         if (verbose)
-            printf("Reading %s:\n", argv[i]);
+            printf("Reading: %s\n", argv[i]);
         WADFILE_ASSERT(READ_OK(wad_header, WadInfo_t), "%s is too short to be valid\n")
         WADFILE_ASSERT(!(wad_header.magic == WAD2), "%s is not a Quake .wad (WAD2)\n")
         fseek(wad, wad_header.table_offset, SEEK_SET);
@@ -173,12 +175,8 @@ next_arg_jmp:
                     PRINT_ATTR("%d", disk_size)
                     PRINT_ATTR("%d", size)
                     switch (wad_lumps[j].lump_type) {
-                        case LUMP_NONE:
-                            strcpy(lump_type, "NONE");
-                            break;
-                        case LUMP_LABEL:
-                            strcpy(lump_type, "LABEL");
-                            break;
+                        case LUMP_NONE:         strcpy(lump_type, "NONE");        break;
+                        case LUMP_LABEL:        strcpy(lump_type, "LABEL");       break;
                         case LUMP_PALETTE:      strcpy(lump_type, "PALETTE");     break;
                         case LUMP_QTEXTURE:     strcpy(lump_type, "QTEXTURE");    break;
                         case LUMP_QPICTURE:     strcpy(lump_type, "QPICTURE");    break;
@@ -199,13 +197,13 @@ next_arg_jmp:
                     printf("%s\n", wad_lumps[j].name);
             }
             if (extract) {
-                if (fnmatch(pattern, wad_lumps[j].name, FNM_EXTMATCH)) {
+                if (!fnmatch(pattern, wad_lumps[j].name, FNM_EXTMATCH)) {
                     strcpy(lump_name, wad_lumps[j].name);
                     sanitise(lump_name);
                     strcpy(outfile, outdir);
                     strcat(outfile, lump_name);
                     if (verbose)
-                        printf("Writing to %s\n", outfile);
+                        printf("Writing: %s\n", outfile);
                     out = fopen(outfile, "w");
                     OUTFILE_ASSERT(!out, "Couldn't open %s\n")
                     wad_tell = ftell(wad);

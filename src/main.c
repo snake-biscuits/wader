@@ -23,7 +23,7 @@ void print_help() {
     printf("  -h, --help               display help and exit\n");
     printf("  -v, --version            display version and exit\n");
     printf("  -o, --output FOLDER      where to place extracted files\n");
-    printf("  -V, --verbose            print lump headers\n");
+    printf("  -V, --verbose            give extra details\n");
     printf("WAD readER\n");
     printf("  -l, --list               list lump names and exit\n");
     printf("  -e, --extract            extract lumps to OUTPUT folder\n");

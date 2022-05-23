@@ -8,7 +8,7 @@ Usage: wader OPTION... WADFILE...
   -h, --help               display help and exit
   -v, --version            display version and exit
   -o, --output FOLDER      where to place extracted files
-  -V, --verbose            print lump headers
+  -V, --verbose            give extra details
 WAD readER
   -l, --list               list lump names and exit
   -e, --extract            extract lumps to OUTPUT folder

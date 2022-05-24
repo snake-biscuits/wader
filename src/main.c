@@ -9,6 +9,11 @@
 #include "version.h"
 
 
+#ifndef FNM_EXTMATCH  // absent in cygwin /usr/include/fnmatch.h
+#define FNM_EXTMATCH  0
+#endif
+
+
 void print_version() {
     printf("wader %d.%d.%d\n", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
     printf("Copyright (C) 2022 snake-biscuits\n");
@@ -43,8 +48,8 @@ void sanitise(char name[17]) {
     char tmp[17];
 
     switch (name[0]) {
-        case '+':  // +Xname -> _Xname
-        case '*':  // *name  -> _name
+        case '+':  // +Xname -> _Xname  (animated)
+        case '*':  // *name  -> _name   (water / lava scroll & warp)
             strcpy(tmp, &name[1]);
             strcpy(name, "_");
             strcat(name, tmp);
@@ -170,7 +175,7 @@ next_arg_jmp:
             if (list) {
                 if (verbose) {
                     printf("Lump %d:\n", j);
-                    #define PRINT_ATTR(format, attr)  printf("\t" #attr " = " format "\n", wad_lumps[j].attr);
+                    #define PRINT_ATTR(format, attr)  printf("\t%-11s = " format "\n", #attr, wad_lumps[j].attr);
                     PRINT_ATTR("%d", offset)
                     PRINT_ATTR("%d", disk_size)
                     PRINT_ATTR("%d", size)
@@ -184,13 +189,13 @@ next_arg_jmp:
                         case LUMP_MIP_TEXTURE:  strcpy(lump_type, "MIP_TEXTURE"); break;
                         default:                strcpy(lump_type, "UNKNOWN");
                     }
-                    printf("\tlump_type = %hhd (%s)\n", wad_lumps[j].lump_type, lump_type);
+                    printf("\t%-11s = %hhd (%s)\n", "lump_type", wad_lumps[j].lump_type, lump_type);
                     switch (wad_lumps[j].compression) {
                         case COMPRESSION_NONE:  strcpy(compression, "NONE"); break;
                         case COMPRESSION_LZSS:  strcpy(compression, "LZSS"); break;
                         default:                strcpy(compression, "????");
                     }
-                    printf("\tcompression = %hhd (%s)\n", wad_lumps[j].compression, compression);
+                    printf("\t%-11s = %hhd (%s)\n", "compression", wad_lumps[j].compression, compression);
                     PRINT_ATTR("%s", name)
                     #undef PRINT_ATTR
                 } else

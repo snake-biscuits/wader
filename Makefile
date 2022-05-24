@@ -2,18 +2,19 @@ CC     := gcc
 CFLAGS := --std=c99 -ggdb
 
 BUILD_DIR := build
-
 WADER := $(BUILD_DIR)/wader
 
 TEST_WAD := /home/bikkie/Documents/Mod/Quake/Wads/prototype_1_3.wad
 
-DUMMY := mkdir -p $(BUILD_DIR)
 
 .PHONY: all run debug
 
 
 # TODO: make `.o` for each `.c` in `src/`
-all: $(BUILD_DIR)/* README
+all: $(BUILD_DIR) $(WADER) $(BUILD_DIR)/lzss README
+
+$(BUILD_DIR):
+	mkdir -p $@
 
 $(WADER): src/main.c src/wadfile.h src/common.h
 	$(CC) $(CFLAGS) $< -o $@

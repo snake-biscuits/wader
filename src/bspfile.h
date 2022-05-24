@@ -14,11 +14,16 @@
 
 #define BSP2 FILE_MAGIC('B', 'S', 'P', '2')  // ReMakeQuake
 
-#define QUAKE_VERSION     29  // includes Hexen II
-#define GOLDSRC_VERSION   30  // includes Blue Shift
-#define REMAKE_VERSION  BSP2
+#define QUAKE_VERSION      29  // includes Hexen II
+#define GOLDSRC_VERSION    30  // includes Blue Shift
+#define REMAKE_VERSION   BSP2
 
-#define LUMP_MIP_TEXTURES  2
+#define BSP_VERSION_OK(h) h.version == QUAKE_VERSION || h.version == GOLDSRC_VERSION || h.version == REMAKE_VERSION
+
+#define MIP_TEXTURES                  2  // bsp lump header index
+#define MAX_MIP_LEVELS                4  // number of pointers after name & size
+#define MAX_MIP_TEXTURES            512
+#define MAX_MIP_TEXTURES_SIZE  0x200000  // max byte-size of lump
 
 
 typedef struct LumpHeader {

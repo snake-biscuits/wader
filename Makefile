@@ -1,5 +1,5 @@
 CC     := gcc
-CFLAGS := -v --std=c99 -ggdb
+CFLAGS := --std=c99 -ggdb
 
 BUILD_DIR := build
 WADER := $(BUILD_DIR)/wader
@@ -23,7 +23,7 @@ $(BUILD_DIR)/lzss: src/lzss.c
 	$(CC) $(CFLAGS) -DLZSS_MAIN $< -o $@
 
 README: $(WADER)
-	$(WADER) -v > $@; echo >> $@; $(WADER) -h >> $@
+	$(WADER) -V > $@; echo >> $@; $(WADER) -h >> $@
 
 run: $(WADER)
 	$< -l $(TEST_WAD) | less -

@@ -1,16 +1,17 @@
 #include <errno.h>
-#include <fnmatch.h>  // TODO: add fnmatch.h to MSYS2 include dir(s) or just distribute w/ wader
-// need binary to link against... finding a MSYS2 pacman package would be ideal
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include <fnmatch.h>  // TODO: add fnmatch.h to MSYS2 include dir(s) or just distribute w/ wader
+// need binary to link against... finding a MSYS2 pacman package would be ideal
+
 #include "wadfile.h"
 #include "version.h"
 
 
-#ifndef FNM_EXTMATCH  // absent in cygwin /usr/include/fnmatch.h
+#ifndef FNM_EXTMATCH  // appears to be unique to POSIX
 #define FNM_EXTMATCH  0
 #endif
 // TODO: remove references to EXTMATCH in errors / help if not available
@@ -28,13 +29,13 @@ void print_version() {
 void print_help() {
     printf("Usage: wader OPTION... WADFILE...\n");
     printf("  -h, --help               display help and exit\n");
-    printf("  -v, --version            display version and exit\n");
-    printf("  -o, --output FOLDER      where to place extracted files\n");
-    printf("  -V, --verbose            give extra details\n");
+    printf("  -V, --version            display version and exit\n");
+    printf("  -v, --verbose            give extra details\n");
     printf("WAD readER\n");
     printf("  -l, --list               list lump names and exit\n");
     printf("  -e, --extract            extract lumps to OUTPUT folder\n");
     printf("                           dumps raw lump contents without headers\n");
+    printf("  -o, --output FOLDER      where to place extracted files\n");
     // TODO: generate .json for extracted files (filename: lump_type, compression etc.)
     printf("  -p, --pattern PATTERN    only touch lumps which match PATTERN\n");
     printf("                           PATTERN must include special characters!\n");
@@ -123,25 +124,25 @@ end_jmp_table:
             if (strlen(argv[1]) == 2) {  // short `-a` args
                 switch (argv[i][1]) {
                     case 'h':  goto help_jmp;
-                    case 'v':  goto version_jmp;
+                    case 'V':  goto version_jmp;
+                    case 'v':  goto verbose_jmp;
                     case 'l':  goto list_jmp;
                     case 'e':  goto extract_jmp;
+                    case 'o':  goto output_jmp;
                     case 'p':  goto pattern_jmp;
                     case 'i':  goto index_jmp;
-                    case 'o':  goto output_jmp;
-                    case 'V':  goto verbose_jmp;
                     default:   goto unknown_jmp;
                 }
             } else if (strncmp(argv[i], "--", 2)) {  // long `--argument` args
                 #define IS_OPTION(option)  (strcmp(argv[i], option))
                 if      IS_OPTION("--help")     goto help_jmp;
                 else if IS_OPTION("--version")  goto version_jmp;
+                else if IS_OPTION("--verbose")  goto verbose_jmp;
                 else if IS_OPTION("--list")     goto list_jmp;
                 else if IS_OPTION("--extract")  goto extract_jmp;
+                else if IS_OPTION("--output")   goto output_jmp;
                 else if IS_OPTION("--pattern")  goto pattern_jmp;
                 else if IS_OPTION("--index")    goto index_jmp;
-                else if IS_OPTION("--output")   goto output_jmp;
-                else if IS_OPTION("--verbose")  goto verbose_jmp;
                 else                            goto unknown_jmp;
                 #undef IS_OPTION
             }

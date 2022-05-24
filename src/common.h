@@ -16,7 +16,7 @@
             int errsv = errno; \
             fprintf(stderr, "Couldn't close %s; errno = %d\n", filename, errsv); \
             return errsv; \
-        };    
+        };
 
 
 typedef struct MipTexture {

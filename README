@@ -6,13 +6,13 @@ There is NO WARRANTY, to the extent permitted by law.
 
 Usage: wader OPTION... WADFILE...
   -h, --help               display help and exit
-  -v, --version            display version and exit
-  -o, --output FOLDER      where to place extracted files
-  -V, --verbose            give extra details
+  -V, --version            display version and exit
+  -v, --verbose            give extra details
 WAD readER
   -l, --list               list lump names and exit
   -e, --extract            extract lumps to OUTPUT folder
                            dumps raw lump contents without headers
+  -o, --output FOLDER      where to place extracted files
   -p, --pattern PATTERN    only touch lumps which match PATTERN
                            PATTERN must include special characters!
   -i, --index INDEX        extract just the lump at INDEX

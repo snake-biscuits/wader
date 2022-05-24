@@ -23,6 +23,7 @@ typedef struct MipTexture {
     char     name[16];  // null-terminated; may hold more data after the first NULL (start frame etc.)
     // *name    is animated like lava / water (texture scrolling)
     // +Xname   has up to 10 animation frames; where X is from '0' to '9'
+    // {name    is transparent?
     // skyname  is animated like the sky (texture is split [A|B] & parallax scrolls)
     int32_t  width;
     int32_t  height;

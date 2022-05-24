@@ -50,6 +50,7 @@ void sanitise(char name[17]) {
     switch (name[0]) {
         case '+':  // +Xname -> _Xname  (animated)
         case '*':  // *name  -> _name   (water / lava scroll & warp)
+        case '{':  // {name  -> _name   (transparent?)
             strcpy(tmp, &name[1]);
             strcpy(name, "_");
             strcat(name, tmp);

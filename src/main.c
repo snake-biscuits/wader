@@ -1,5 +1,6 @@
 #include <errno.h>
-#include <fnmatch.h>
+#include <fnmatch.h>  // TODO: add fnmatch.h to MSYS2 include dir(s) or just distribute w/ wader
+// need binary to link against... finding a MSYS2 pacman package would be ideal
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,6 +13,7 @@
 #ifndef FNM_EXTMATCH  // absent in cygwin /usr/include/fnmatch.h
 #define FNM_EXTMATCH  0
 #endif
+// TODO: remove references to EXTMATCH in errors / help if not available
 
 
 void print_version() {

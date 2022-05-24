@@ -1,5 +1,5 @@
 CC     := gcc
-CFLAGS := --std=c99 -ggdb
+CFLAGS := -v --std=c99 -ggdb
 
 BUILD_DIR := build
 WADER := $(BUILD_DIR)/wader

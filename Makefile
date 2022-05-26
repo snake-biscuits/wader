@@ -16,7 +16,7 @@ all: $(BUILD_DIR) $(WADER) $(BUILD_DIR)/lzss README
 $(BUILD_DIR):
 	mkdir -p $@
 
-$(WADER): src/main.c src/wadfile.h src/common.h
+$(WADER): src/main.c src/wadfile.h src/common.h src/version.h
 	$(CC) $(CFLAGS) $< -o $@
 
 $(BUILD_DIR)/lzss: src/lzss.c

@@ -3,6 +3,7 @@
 
 // --- Common Utilities --- //
 
+#include <errno.h>
 #include <stdint.h>
 
 

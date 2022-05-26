@@ -11,7 +11,7 @@ TEST_WAD := /home/bikkie/Documents/Mod/Quake/Wads/prototype_1_3.wad
 
 
 # TODO: make `.o` for each `.c` in `src/`
-all: $(BUILD_DIR) $(WADER) $(BUILD_DIR)/lzss README
+all: $(BUILD_DIR) $(WADER) README $(BUILD_DIR)/lzss $(BUILD_DIR)/vpk
 
 $(BUILD_DIR):
 	mkdir -p $@
@@ -19,11 +19,14 @@ $(BUILD_DIR):
 $(WADER): src/main.c src/wadfile.h src/common.h src/version.h
 	$(CC) $(CFLAGS) $< -o $@
 
+README: $(WADER)
+	$(WADER) -V > $@; echo >> $@; $(WADER) -h >> $@
+
 $(BUILD_DIR)/lzss: src/lzss.c
 	$(CC) $(CFLAGS) -DLZSS_MAIN $< -o $@
 
-README: $(WADER)
-	$(WADER) -V > $@; echo >> $@; $(WADER) -h >> $@
+$(BUILD_DIR)/vpk: src/vpkfile.c
+	$(CC) $(CFLAGS) -DVPK_MAIN $< -o $@
 
 run: $(WADER)
 	$< -l $(TEST_WAD) | less -

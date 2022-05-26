@@ -1,11 +1,8 @@
-#include <errno.h>
+#include <fnmatch.h>  // TODO: link fnmatch in Makefile if compiling w/ MSys2
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include <fnmatch.h>  // TODO: add fnmatch.h to MSYS2 include dir(s) or just distribute w/ wader
-// need binary to link against... finding a MSYS2 pacman package would be ideal
 
 #include "wadfile.h"
 #include "version.h"

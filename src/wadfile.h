@@ -3,8 +3,8 @@
 
 // --- WAD File Structures --- //
 // References:
-// -- github.com/Id-Software/Quake/QW/client/wad.h (GPLv2+)
-// -- github.com/Id-Software/Quake/QW/client/wad.c (GPLv2+)
+// -- github.com/Id-Software/Quake/blob/master/QW/client/wad.h (GPLv2+)
+// -- github.com/Id-Software/Quake/blob/master/QW/client/wad.c (GPLv2+)
 // -- gamers.org/dEngine/quake/spec/quake-spec34/qkspec_7.htm
 // -- hlbsp.sourceforge.net/index.php?content=waddef
 

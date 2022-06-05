@@ -155,6 +155,7 @@ next_arg_jmp:
         return 1;
     } else if (i == 1) {
         fprintf(stderr, "please select at least one OPTION\n");
+        goto help_jmp;
         return 1;
     }
 

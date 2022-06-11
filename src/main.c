@@ -37,6 +37,7 @@ void print_help() {
     printf("  -p, --pattern PATTERN    only touch lumps which match PATTERN\n");
     printf("                           PATTERN must include special characters!\n");
     printf("  -i, --index INDEX        extract just the lump at INDEX\n");
+    // TODO:  -m, --max-texture        report largest texture dimension(s) in WADFILE
     // TODO: WAD makER
     // TODO:  -b, --bsp BSPFILE        make a WAD from BSPFILE's embedded MIP_TEXTURES
     // TODO:  -f, --files LIST.json    make a WAD from raw lumps in LIST.json
